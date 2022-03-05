@@ -1,6 +1,6 @@
 # kkgw
 
-My function storage
+My function library
 
 # use
 
