@@ -15,5 +15,5 @@ setup(
     #         'top = kkgw.top:main',
     #         'bottom = kkgw.utils.bottom:sub'
     #     ]
-    }
+    # }
 )
