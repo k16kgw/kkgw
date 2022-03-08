@@ -21,17 +21,22 @@ class Calc():
             'N': 10, # 内部領域の分割数
             'Dx': 0.5, # 領域の分割幅
             'Dt': 0.5, # 時間の分割幅
-            'brank': 100, # 解を保存するステップ間隔
         },
         initialdata: dict = {
             'a0': 0.01, # 初期値の係数
             'wn': 4, # 波数
             'func': 'a0 * np.cos(wn * np.pi*(idx)/(N+5))', # 関数形
         },
+        timeset: dict = {
+            'inittime': 0,
+            'timespan': 1000,
+            'brank': 100, # 解を保存するステップ間隔
+        },
         output_dir: str='./data/output'
     ):
         self.settings = settings # space dimension
         self.initialdata = initialdata
+        self.timeset = timeset
         self.output_dir = output_dir
 
         OUTPUT_VAR = self.output_dir / 'var'
@@ -62,24 +67,26 @@ class Calc():
         t = 0
         np.save(os.path.join(OUTPUT_U, f'U_t={t}.npy'), U[:, 0])
 
-    def calc(self, equation, init_time=0, timespan=100):
+    def calc(self, equation):
         N = self.settings['N']
-        brank = self.settings['brank']
+        inittime = self.timeset['inittime']
+        timespan = self.timeset['timespan']
+        brank = self.timeset['brank']
 
         # 初期値の読み出し
         U = np.zeros((N+4, 2))
         U[:, 0] = np.load(os.path.join(self.output_var, 'U', f'U_t={init_time}.npy'))
 
-        for t in range(init_time+1, init_time+timespan+1):
+        for t in range(inittime+1, inittime+timespan+1):
             U1 = U[:, 0]
             # result = optimize.root(equation, U1, method="broyden1")
             result = optimize.root(equation, U1, args=U1, method="hybr")
             # result = optimize.root(CahnHilliard.equation, U1, args=U1, method="hybr")
             U[:, 1] = result.x
 
-            if t%brank==0 or t==(init_time+1):
+            if t%brank==0 or t==(inittime+1):
                 np.save(os.path.join(self.output_var, 'U', f'U_t={t}.npy'), U[:, 1])
-                if t%(brank*100)==0 or t==(init_time+1):
+                if t%(brank*100)==0 or t==(inittime+1):
                     print(f't={t}')
 
             U[:, 0] = U[:, 1]
