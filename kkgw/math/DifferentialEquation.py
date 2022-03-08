@@ -12,7 +12,7 @@ from PIL import Image
 
 import pickle
 
-class CahnHilliard():
+class CahnHilliardByDVDM():
 
     def __init__(
         self, 
