@@ -18,7 +18,7 @@ def close_fig(fig, close):
     else:
         plt.show()
 
-class Plot1d():
+class Plot2d():
     def __init__(self, output_dir):
         self.output_dir = output_dir
         OUTPUT_FIG = output_dir / 'fig'
