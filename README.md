@@ -1,6 +1,6 @@
 # kkgw
 
-function library
+useful function library
 
 # use
 
