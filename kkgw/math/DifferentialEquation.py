@@ -1,7 +1,4 @@
-from mimetypes import init
 import os
-from sqlite3 import paramstyle
-from typing_extensions import Self
 
 import numpy as np
 from scipy import optimize
@@ -15,7 +12,7 @@ from PIL import Image
 
 import pickle
 
-class CH():
+class CahnHilliard():
 
     def __init__(
         self, 
@@ -28,16 +25,10 @@ class CH():
         params: dict = {
             'Gamma': 2, # 拡散項の係数
             'const': 0.25, # 二重井戸型ポテンシャルの係数
-        },
-        initialdata: dict = {
-            'a0': 0.01, # 初期値の係数
-            'wn': 4, # 波数
-            'func': 'a0 * np.cos(wn * np.pi*(ix)/(N+5))', # 関数形
         }
     ):
         self.settings = settings # space dimension
         self.params = params # parameters
-        self.initialdata = initialdata
 
     def Delta_f(self) -> np.ndarray:
         N = self.settings['N']
@@ -72,7 +63,7 @@ class CH():
             + 2*const * (U2 + U1)
         return output
 
-    def Equation(self, U2, U1):
+    def equation(self, U2, U1):
         """ 方程式 """
         N = self.settings['N']
         Dx = self.settings['Dx']
@@ -101,7 +92,6 @@ class CH():
         output = (Utmp.sum() - Utmp[0]/2 - Utmp[N-1]/2) * Dx # cf. OFFY(2020)式(11)
         return output
 
-    #############
     def G_func(self, Utmp):
         """ 離散局所エネルギー """
         N = self.settings['N']
@@ -115,7 +105,7 @@ class CH():
             G[i] = const*(Utmp[k]**4 - 2*Utmp[k]**2 + 1) + Gamma/4/(Dx**2)*((Utmp[k+1]-Utmp[k])**2 + (Utmp[k]-Utmp[k-1])**2)
         return G
 
-    def Energy(self, G):
+    def energy(self, G):
         """
         離散全エネルギー
         Parameter
