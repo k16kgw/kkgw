@@ -12,6 +12,12 @@ from PIL import Image
 
 import pickle
 
+def close_fig(fig, close):
+    if close:
+        plt.close(fig)
+    else:
+        plt.show()
+
 class Plot1d():
     def __init__(self, output_dir):
         self.output_dir = output_dir
@@ -19,7 +25,7 @@ class Plot1d():
         OUTPUT_FIG.mkdir(parents=True, exist_ok=True)
         self.output_fig = OUTPUT_FIG
 
-    def snapshot_sol(self, Upl, time):
+    def snapshot_sol(self, Upl, time, close=True):
         """ 各時刻での空間x未知関数のグラフ """
         OUTPUT_FIG_U = self.output_fig / 'U'
         OUTPUT_FIG_U.mkdir(parents=True, exist_ok=True)
@@ -33,7 +39,18 @@ class Plot1d():
         x = list(range(0, Upl.size))
         ax.plot(x, Upl)
         fig.savefig(os.path.join(OUTPUT_FIG_U, f't={time}.png'))
-        plt.close(fig)
+        close_fig(fig, close)
+
+    def timeseries(self, x, title: str, inittime: int, timespan: int, Dt, close=True):
+        fig = plt.figure(figsize=(6,5), facecolor='w')
+        ax = fig.add_subplot(111)
+        t = np.linspace(inittime, int(timespan*Dt)+1, timespan+1)
+        plt.plot(t, x, color='r')
+        ax.set_xlabel('time')
+        ax.set_ylabel(title)
+        ax.set_title(title)
+        fig.savefig(os.path.join(self.output_fig, f'{title}.png'))
+        close_fig(fig, close)
 
 class plot3d():
     def functz(Upl):

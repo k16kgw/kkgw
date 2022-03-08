@@ -13,8 +13,6 @@ from PIL import Image
 
 import pickle
 
-from kkgw.math.DifferentialEquation import CahnHilliard
-
 class Calc():
 
     def __init__(
