@@ -68,7 +68,7 @@ class Anim2d():
         OUTPUT_FIG.mkdir(parents=True, exist_ok=True)
         self.output_fig = OUTPUT_FIG
 
-    def animation(self, varname: str, ylim=[-1,1]):
+    def animation(self, varname: str, ylim=[-1,1], ext='mp4'):
         """ アニメのプロット """
         Dt = self.timeset['Dt']
         with open(os.path.join(self.output_dir, 'settings.json')) as fp:
@@ -89,7 +89,7 @@ class Anim2d():
 
         # 1000*Dt[ms] ごとに表示
         ani = animation.ArtistAnimation(fig, ims, interval=100)
-        ani.save(os.path.join(self.output_fig, f'{varname}.mp4'))
+        ani.save(os.path.join(self.output_fig, f'{varname}.{ext}'))
 
 class plot3d():
     def functz(Upl):
