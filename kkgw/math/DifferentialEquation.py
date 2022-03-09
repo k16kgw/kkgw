@@ -124,7 +124,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         output = (G.sum() - G[0]/2 - G[N-1]/2) * Dx
         return output
 
-class CahnHilliard_WithNeumannBC_ByEuler():
+class CahnHilliard_WithNeumannBC_ByFwdEuler():
 
     def __init__(
         self, 
@@ -142,37 +142,22 @@ class CahnHilliard_WithNeumannBC_ByEuler():
         self.settings = settings # space dimension
         self.params = params # parameters
 
-    # def Delta_f(self) -> np.ndarray:
-    #     N = self.settings['N']
+    def Laplacian(self, N) -> np.ndarray:
+        output = np.zeros((N, N+2))
+        for k in range(0, N):
+            output[k, k:k+3] = [1, -2, 1]
+        return output
 
-    #     Delta = np.zeros((N+2, N+2))
-    #     Delta[0, 1:4] = [1, -2, 1]
-    #     Delta[N+1, -4:-1] = [1, -2, 1]
-    #     for k in range(1, N+1):
-    #         Delta[k, k-1:k+2] = [1, -2, 1]
-    #     return Delta
-
-    # def Mat_f(self) -> np.ndarray:
-    #     """ 行列計算 """
-    #     N = self.settings['N']
-
-    #     Mat = np.zeros((N, N+2))
-    #     Mat[0, 1:3] = [-2, 2]
-    #     Mat[-1, -3:-1] = [2, -2]
-    #     for k in range(1, N-1):
-    #         Mat[k, k:k+3] = [1, -2, 1]
-    #     return Mat
-
-    def chem_func(self, U1, U2):
+    def chem_func(self, U1):
         """ 化学ポテンシャル """
+        N = self.settings['N']
         Dx = self.settings['Dx']
         Gamma = self.params['Gamma']
         const = self.params['const']
 
-        Delta = self.Delta_f()
-        output = Gamma/2/Dx**4 * np.dot(Delta, (U1 + U2)) \
-            - const * (U2**3 + U2**2 * U1 + U2 * U1**2 + U1**3) \
-            + 2*const * (U2 + U1)
+        Lap = self.Laplacian(N+2)
+        output = Gamma/Dx**2 * np.dot(Lap, U1) \
+            - const * (U1**3 - U1)
         return output
 
     def equation(self, U2, U1) -> list:
@@ -181,7 +166,7 @@ class CahnHilliard_WithNeumannBC_ByEuler():
         Dx = self.settings['Dx']
         Dt = self.settings['Dt']
 
-        Mat = self.Mat_f()
+        Lap = self.Laplacian(N)
 
         eq = [0]*(N+4)
         # ノートでは k = -2, -1, 0, 1, ... , K-1, K, K+1 だが
@@ -190,7 +175,7 @@ class CahnHilliard_WithNeumannBC_ByEuler():
 
         eq[0] = U2[0] - U2[4]
         eq[1] = U2[1] - U2[3]
-        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Mat, self.chem_func(U1[1:N+3], U2[1:N+3]))
+        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap, self.chem_func(U1))
         eq[N+2] = U2[N+2] - U2[N]
         eq[N+3] = U2[N+3] - U2[N-1]
 
@@ -205,32 +190,32 @@ class CahnHilliard_WithNeumannBC_ByEuler():
         output = (Utmp.sum() - Utmp[0]/2 - Utmp[N-1]/2) * Dx # cf. OFFY(2020)式(11)
         return output
 
-    # def G_func(self, Utmp) -> List:
-    def local_energy(self, Utmp) -> np.ndarray:
-        """ 離散局所エネルギー """
-        N = self.settings['N']
-        Dx = self.settings['Dx']
-        Gamma = self.params['Gamma']
-        const = self.params['const']
+    # # def G_func(self, Utmp) -> List:
+    # def local_energy(self, Utmp) -> np.ndarray:
+    #     """ 離散局所エネルギー """
+    #     N = self.settings['N']
+    #     Dx = self.settings['Dx']
+    #     Gamma = self.params['Gamma']
+    #     const = self.params['const']
 
-        # G = [0]*N
-        G = np.zeros(N)
-        for k in range(2, N+2):
-            i = k-2
-            G[i] = const*(Utmp[k]**4 - 2*Utmp[k]**2 + 1) + Gamma/4/(Dx**2)*((Utmp[k+1]-Utmp[k])**2 + (Utmp[k]-Utmp[k-1])**2)
-        return G
+    #     # G = [0]*N
+    #     G = np.zeros(N)
+    #     for k in range(2, N+2):
+    #         i = k-2
+    #         G[i] = const*(Utmp[k]**4 - 2*Utmp[k]**2 + 1) + Gamma/4/(Dx**2)*((Utmp[k+1]-Utmp[k])**2 + (Utmp[k]-Utmp[k-1])**2)
+    #     return G
 
-    def energy(self, G: np.ndarray) -> float:
-        """
-        離散全エネルギー
-        Parameter
-        ---------
-        G: List
-            離散局所エネルギー
-        """
-        N = self.settings['N']
-        Dx = self.settings['Dx']
+    # def energy(self, G: np.ndarray) -> float:
+    #     """
+    #     離散全エネルギー
+    #     Parameter
+    #     ---------
+    #     G: List
+    #         離散局所エネルギー
+    #     """
+    #     N = self.settings['N']
+    #     Dx = self.settings['Dx']
 
-        # output = (sum(G) - G[0]/2 - G[N-1]/2) * Dx
-        output = (G.sum() - G[0]/2 - G[N-1]/2) * Dx
-        return output
+    #     # output = (sum(G) - G[0]/2 - G[N-1]/2) * Dx
+    #     output = (G.sum() - G[0]/2 - G[N-1]/2) * Dx
+    #     return output
