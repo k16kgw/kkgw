@@ -1,6 +1,5 @@
 import os
 import json
-from django.conf import settings
 
 import numpy as np
 import matplotlib.pyplot as plt 
