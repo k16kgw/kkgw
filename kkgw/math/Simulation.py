@@ -1,11 +1,8 @@
 import json
 import os
-import pickle
 
 import numpy as np
 from scipy import optimize
-
-import pickle
 
 class Calc():
 
@@ -73,13 +70,16 @@ class Calc():
         U[:, 0] = np.load(os.path.join(self.output_var, 'U', f't={inittime*Dt}.npy'))
 
         for t in range(inittime+1, inittime+timespan+1):
-            U1 = U[:, 0]
+            U1 = U[:,0]
             # result = optimize.root(equation, U1, method="broyden1")
             result = optimize.root(equation, U1, args=U1, method="hybr")
-            U[:, 1] = result.x
+            U[:,1] = result.x
 
             if t%brank==0 or t==(inittime+1):
-                np.save(os.path.join(self.output_var, 'U', f't={t*Dt}.npy'), U[:, 1])
+                np.save(os.path.join(self.output_var, 'U', f't={t*Dt}.npy'), U[:,1])
+                OUTPUT_dUdt = self.output_var / 'dUdt'
+                OUTPUT_dUdt.mkdir(parents=True, exist_ok=True)
+                np.save(os.path.join(OUTPUT_dUdt, f't={t*Dt}.npy'), (U[:,1]-U[:,0])/Dt)
                 if t%(brank*100)==0 or t==(inittime+1):
                     print(f't={t*Dt}')
 

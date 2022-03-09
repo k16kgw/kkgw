@@ -64,7 +64,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
             + 2*const * (U2 + U1)
         return output
 
-    def equation(self, U2, U1):
+    def equation(self, U2, U1) -> list:
         """ 方程式 """
         N = self.settings['N']
         Dx = self.settings['Dx']
@@ -86,7 +86,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         return eq
 
     # def M_func(self, Utmp):
-    def mass(self, Utmp):
+    def mass(self, Utmp) -> float:
         """ 質量 """
         N = self.settings['N']
         Dx = self.settings['Dx']
@@ -95,7 +95,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         return output
 
     # def G_func(self, Utmp) -> List:
-    def local_energy(self, Utmp) -> List:
+    def local_energy(self, Utmp) -> np.ndarray:
         """ 離散局所エネルギー """
         N = self.settings['N']
         Dx = self.settings['Dx']
@@ -109,7 +109,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
             G[i] = const*(Utmp[k]**4 - 2*Utmp[k]**2 + 1) + Gamma/4/(Dx**2)*((Utmp[k+1]-Utmp[k])**2 + (Utmp[k]-Utmp[k-1])**2)
         return G
 
-    def energy(self, G: List):
+    def energy(self, G: np.ndarray) -> float:
         """
         離散全エネルギー
         Parameter

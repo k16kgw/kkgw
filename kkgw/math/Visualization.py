@@ -69,7 +69,7 @@ class Anim2d():
         OUTPUT_FIG.mkdir(parents=True, exist_ok=True)
         self.output_fig = OUTPUT_FIG
 
-    def animation(self, varname: str):
+    def animation(self, varname: str, ylim=[-1,1]):
         """ アニメのプロット """
         Dt = self.timeset['Dt']
         with open(os.path.join(self.output_dir, 'settings.json')) as fp:
@@ -81,7 +81,7 @@ class Anim2d():
         for time in range(self.timeset['inittime'], self.timeset['inittime']+self.timeset['timespan']+1, self.timeset['brank']):
             fpl = np.load(os.path.join(self.output_var, varname, f't={time*Dt}.npy'))
             img = ax.plot(x, fpl, c='r') # グラフを作成
-            ax.set_ylim([-1,1])
+            ax.set_ylim(ylim)
             title = ax.text(0.5, 1.01, f'time={time*Dt}',
                     ha='center', va='bottom',
                     transform=ax.transAxes, fontsize='large')
@@ -89,7 +89,7 @@ class Anim2d():
             ims.append(img+[title]) # グラフを配列に追加 
 
         # 1000*Dt[ms] ごとに表示
-        ani = animation.ArtistAnimation(fig, ims, interval=1000*Dt)
+        ani = animation.ArtistAnimation(fig, ims, interval=100)
         ani.save(os.path.join(self.output_fig, f'{varname}.mp4'))
 
 class plot3d():
