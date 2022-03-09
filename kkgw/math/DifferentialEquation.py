@@ -155,9 +155,9 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
         Gamma = self.params['Gamma']
         const = self.params['const']
 
-        Lap = self.Laplacian(N+2)
-        output = Gamma/Dx**2 * np.dot(Lap, U1) \
-            - const * (U1**3 - U1)
+        Lap1 = self.Laplacian(N+2)
+        output = Gamma/Dx**2 * np.dot(Lap1, U1) \
+            - const * (U1[1:-1]**3 - U1[1:-1])
         return output
 
     def equation(self, U2, U1) -> list:
@@ -166,7 +166,7 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
         Dx = self.settings['Dx']
         Dt = self.settings['Dt']
 
-        Lap = self.Laplacian(N)
+        Lap2 = self.Laplacian(N)
 
         eq = [0]*(N+4)
         # ノートでは k = -2, -1, 0, 1, ... , K-1, K, K+1 だが
@@ -175,7 +175,7 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
 
         eq[0] = U2[0] - U2[4]
         eq[1] = U2[1] - U2[3]
-        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap, self.chem_func(U1))
+        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap2, self.chem_func(U1))
         eq[N+2] = U2[N+2] - U2[N]
         eq[N+3] = U2[N+3] - U2[N-1]
 
