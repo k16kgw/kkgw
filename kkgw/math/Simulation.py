@@ -1,15 +1,9 @@
+import json
 import os
-from django.conf import settings
+import pickle
 
 import numpy as np
 from scipy import optimize
-import matplotlib.pyplot as plt 
-import matplotlib.pylab as p
-from mpl_toolkits.mplot3d import Axes3D 
-from matplotlib import animation, rc
-
-from io import BytesIO
-from PIL import Image
 
 import pickle
 
@@ -31,6 +25,7 @@ class Calc():
             'inittime': 0,
             'timespan': 1000,
             'brank': 100, # 解を保存するステップ間隔
+            'Dt': 0.5 # settingsと同じ値
         },
         output_dir: str='./data/output'
     ):
@@ -53,10 +48,10 @@ class Calc():
         OUTPUT_U.mkdir(parents=True, exist_ok=True)
 
         # パラメタの保存
-        with open(os.path.join(self.output_dir, 'settings.json'), 'wb') as fp:
-            pickle.dump(self.settings, fp)
-        with open(os.path.join(self.output_dir, 'initialdata.json'), 'wb') as fp:
-            pickle.dump(self.initialdata, fp)
+        with open(os.path.join(self.output_dir, 'settings.json'), 'w') as fp:
+            json.dump(self.settings, fp)
+        with open(os.path.join(self.output_dir, 'initialdata.json'), 'w') as fp:
+            json.dump(self.initialdata, fp)
 
         # 初期値の保存
         U = np.zeros((N+4, 2)) # 2ステップ分のU
@@ -64,29 +59,28 @@ class Calc():
             # 初期条件
             U[idx, 0] = eval(self.initialdata['func'])
         # 初期値の保存
-        t = 0
-        np.save(os.path.join(OUTPUT_U, f'U_t={t}.npy'), U[:, 0])
+        np.save(os.path.join(OUTPUT_U, f't=0.0.npy'), U[:, 0])
 
     def calc(self, equation):
         N = self.settings['N']
         inittime = self.timeset['inittime']
         timespan = self.timeset['timespan']
         brank = self.timeset['brank']
+        Dt = self.timeset['Dt']
 
         # 初期値の読み出し
         U = np.zeros((N+4, 2))
-        U[:, 0] = np.load(os.path.join(self.output_var, 'U', f'U_t={init_time}.npy'))
+        U[:, 0] = np.load(os.path.join(self.output_var, 'U', f't={inittime*Dt}.npy'))
 
         for t in range(inittime+1, inittime+timespan+1):
             U1 = U[:, 0]
             # result = optimize.root(equation, U1, method="broyden1")
             result = optimize.root(equation, U1, args=U1, method="hybr")
-            # result = optimize.root(CahnHilliard.equation, U1, args=U1, method="hybr")
             U[:, 1] = result.x
 
             if t%brank==0 or t==(inittime+1):
-                np.save(os.path.join(self.output_var, 'U', f'U_t={t}.npy'), U[:, 1])
+                np.save(os.path.join(self.output_var, 'U', f't={t*Dt}.npy'), U[:, 1])
                 if t%(brank*100)==0 or t==(inittime+1):
-                    print(f't={t}')
+                    print(f't={t*Dt}')
 
             U[:, 0] = U[:, 1]

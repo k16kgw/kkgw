@@ -102,7 +102,8 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         Gamma = self.params['Gamma']
         const = self.params['const']
 
-        G = [0]*N
+        # G = [0]*N
+        G = np.zeros(N)
         for k in range(2, N+2):
             i = k-2
             G[i] = const*(Utmp[k]**4 - 2*Utmp[k]**2 + 1) + Gamma/4/(Dx**2)*((Utmp[k+1]-Utmp[k])**2 + (Utmp[k]-Utmp[k-1])**2)
@@ -119,5 +120,6 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         N = self.settings['N']
         Dx = self.settings['Dx']
 
-        output = (sum(G) - G[0]/2 - G[N-1]/2) * Dx
+        # output = (sum(G) - G[0]/2 - G[N-1]/2) * Dx
+        output = (G.sum() - G[0]/2 - G[N-1]/2) * Dx
         return output
