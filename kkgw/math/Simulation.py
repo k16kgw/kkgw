@@ -22,18 +22,11 @@ class Calc():
             'wn': 4, # 波数
             'func': 'a0 * np.cos(wn * np.pi*(idx)/(N+5))', # 関数形
         },
-        timeset: dict = {
-            'inittime': 0,
-            'timespan': 1000,
-            'brank': 100, # 解を保存するステップ間隔
-            'Dt': 0.5 # settingsと同じ値
-        },
         output_dir: str='./data/output'
     ):
         self.settings = settings # space dimension
         self.params = params
         self.initialdata = initialdata
-        self.timeset = timeset
         self.output_dir = output_dir
 
         OUTPUT_VAR = self.output_dir / 'var'
@@ -65,12 +58,21 @@ class Calc():
         # 初期値の保存
         np.save(os.path.join(OUTPUT_U, f't=0.0.npy'), U[:, 0])
 
-    def calc(self, equation):
+    def calc(
+        self,
+        equation,
+        timeset: dict = {
+            'inittime': 0,
+            'timespan': 1000,
+            'brank': 100, # 解を保存するステップ間隔
+            'Dt': 0.5 # settingsと同じ値
+        },
+    ):
         N = self.settings['N']
-        inittime = self.timeset['inittime']
-        timespan = self.timeset['timespan']
-        brank = self.timeset['brank']
-        Dt = self.timeset['Dt']
+        inittime = timeset['inittime']
+        timespan = timeset['timespan']
+        brank = timeset['brank']
+        Dt = timeset['Dt']
 
         # 初期値の読み出し
         U = np.zeros((N+4, 2))
