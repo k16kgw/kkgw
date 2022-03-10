@@ -127,7 +127,7 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
 
         Lap = self.Laplacian(N+2)
         output = Gamma/Dx**2 * np.dot(Lap, U1) \
-            - const * (U1[1:-1]**3 - U1[1:-1])
+            - const * 4*(U1[1:-1]**3 - U1[1:-1])
         return output
 
     def equation(self, U2, U1) -> list:
