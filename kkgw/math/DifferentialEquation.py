@@ -21,7 +21,6 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
             'N': 10, # 内部領域の分割数
             'Dx': 0.5, # 領域の分割幅
             'Dt': 0.5, # 時間の分割幅
-            'brank': 10, # 解を保存するステップ間隔
         },
         params: dict = {
             'Gamma': 2, # 拡散項の係数
@@ -52,16 +51,25 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
             Mat[k, k:k+3] = [1, -2, 1]
         return Mat
 
-    def chem_func(self, U1, U2):
+    def Laplacian(self, N) -> np.ndarray:
+        output = np.zeros((N, N+2))
+        for k in range(0, N):
+            output[k, k:k+3] = [1, -2, 1]
+        return output
+
+    def chem_func(self, U1, U2) -> np.ndarray:
         """ 化学ポテンシャル """
+        N = self.settings['N']
         Dx = self.settings['Dx']
         Gamma = self.params['Gamma']
         const = self.params['const']
+        U1tmp = U1[1:N+3]
+        U2tmp = U2[1:N+3]
 
-        Delta = self.Delta_f()
-        output = Gamma/2/Dx**2 * np.dot(Delta, (U1 + U2)) \
-            - const * (U2**3 + U2**2 * U1 + U2 * U1**2 + U1**3) \
-            + 2*const * (U2 + U1)
+        Lap = self.Laplacian(N+2)
+        output = Gamma/2/Dx**2 * np.dot(Lap, (U1 + U2)) \
+            - const * (U2tmp**3 + U2tmp**2 * U1tmp + U2tmp * U1tmp**2 + U1tmp**3) \
+            + 2*const * (U2tmp + U1tmp)
         return output
 
     def equation(self, U2, U1) -> list:
@@ -70,7 +78,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         Dx = self.settings['Dx']
         Dt = self.settings['Dt']
 
-        Mat = self.Mat_f()
+        Lap = self.Laplacian(N)
 
         eq = [0]*(N+4)
         # ノートでは k = -2, -1, 0, 1, ... , K-1, K, K+1 だが
@@ -79,7 +87,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
 
         eq[0] = U2[0] - U2[4]
         eq[1] = U2[1] - U2[3]
-        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Mat, self.chem_func(U1[1:N+3], U2[1:N+3]))
+        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap, self.chem_func(U1, U2))
         eq[N+2] = U2[N+2] - U2[N]
         eq[N+3] = U2[N+3] - U2[N-1]
 
@@ -132,7 +140,6 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
             'N': 10, # 内部領域の分割数
             'Dx': 0.5, # 領域の分割幅
             'Dt': 0.5, # 時間の分割幅
-            'brank': 10, # 解を保存するステップ間隔
         },
         params: dict = {
             'Gamma': 2, # 拡散項の係数

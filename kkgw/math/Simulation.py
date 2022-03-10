@@ -47,6 +47,8 @@ class Calc():
         # パラメタの保存
         with open(os.path.join(self.output_dir, 'settings.json'), 'w') as fp:
             json.dump(self.settings, fp)
+        with open(os.path.join(self.output_dir, 'params.json'), 'w') as fp:
+            json.dump(self.params, fp)
         with open(os.path.join(self.output_dir, 'initialdata.json'), 'w') as fp:
             json.dump(self.initialdata, fp)
 
