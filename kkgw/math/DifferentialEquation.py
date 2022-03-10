@@ -1,22 +1,9 @@
-import os
-from typing import List
-
 import numpy as np
-from scipy import optimize
-import matplotlib.pyplot as plt 
-import matplotlib.pylab as p
-from mpl_toolkits.mplot3d import Axes3D 
-from matplotlib import animation, rc
-
-from io import BytesIO
-from PIL import Image
-
-import pickle
 
 class CahnHilliard_WithNeumannBC_ByDVDM():
 
     def __init__(
-        self, 
+        self,
         settings: dict = {
             'N': 10, # 内部領域の分割数
             'Dx': 0.5, # 領域の分割幅
@@ -29,27 +16,6 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
     ):
         self.settings = settings # space dimension
         self.params = params # parameters
-
-    def Delta_f(self) -> np.ndarray:
-        N = self.settings['N']
-
-        Delta = np.zeros((N+2, N+2))
-        Delta[0, 1:4] = [1, -2, 1]
-        Delta[N+1, -4:-1] = [1, -2, 1]
-        for k in range(1, N+1):
-            Delta[k, k-1:k+2] = [1, -2, 1]
-        return Delta
-
-    def Mat_f(self) -> np.ndarray:
-        """ 行列計算 """
-        N = self.settings['N']
-
-        Mat = np.zeros((N, N+2))
-        Mat[0, 1:3] = [-2, 2]
-        Mat[-1, -3:-1] = [2, -2]
-        for k in range(1, N-1):
-            Mat[k, k:k+3] = [1, -2, 1]
-        return Mat
 
     def Laplacian(self, N) -> np.ndarray:
         output = np.zeros((N, N+2))
@@ -93,7 +59,6 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
 
         return eq
 
-    # def M_func(self, Utmp):
     def mass(self, Utmp) -> float:
         """ 質量 """
         N = self.settings['N']
@@ -102,7 +67,6 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         output = (Utmp.sum() - Utmp[0]/2 - Utmp[N-1]/2) * Dx # cf. OFFY(2020)式(11)
         return output
 
-    # def G_func(self, Utmp) -> List:
     def local_energy(self, Utmp) -> np.ndarray:
         """ 離散局所エネルギー """
         N = self.settings['N']
@@ -110,7 +74,6 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         Gamma = self.params['Gamma']
         const = self.params['const']
 
-        # G = [0]*N
         G = np.zeros(N)
         for k in range(2, N+2):
             i = k-2
@@ -122,7 +85,7 @@ class CahnHilliard_WithNeumannBC_ByDVDM():
         離散全エネルギー
         Parameter
         ---------
-        G: List
+        G: np.ndarray
             離散局所エネルギー
         """
         N = self.settings['N']
@@ -162,8 +125,8 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
         Gamma = self.params['Gamma']
         const = self.params['const']
 
-        Lap1 = self.Laplacian(N+2)
-        output = Gamma/Dx**2 * np.dot(Lap1, U1) \
+        Lap = self.Laplacian(N+2)
+        output = Gamma/Dx**2 * np.dot(Lap, U1) \
             - const * (U1[1:-1]**3 - U1[1:-1])
         return output
 
@@ -173,7 +136,7 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
         Dx = self.settings['Dx']
         Dt = self.settings['Dt']
 
-        Lap2 = self.Laplacian(N)
+        Lap = self.Laplacian(N)
 
         eq = [0]*(N+4)
         # ノートでは k = -2, -1, 0, 1, ... , K-1, K, K+1 だが
@@ -182,13 +145,12 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
 
         eq[0] = U2[0] - U2[4]
         eq[1] = U2[1] - U2[3]
-        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap2, self.chem_func(U1))
+        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap, self.chem_func(U1))
         eq[N+2] = U2[N+2] - U2[N]
         eq[N+3] = U2[N+3] - U2[N-1]
 
         return eq
 
-    # def M_func(self, Utmp):
     def mass(self, Utmp) -> float:
         """ 質量 """
         N = self.settings['N']
@@ -197,7 +159,6 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
         output = (Utmp.sum() - Utmp[0]/2 - Utmp[N-1]/2) * Dx # cf. OFFY(2020)式(11)
         return output
 
-    # # def G_func(self, Utmp) -> List:
     # def local_energy(self, Utmp) -> np.ndarray:
     #     """ 離散局所エネルギー """
     #     N = self.settings['N']

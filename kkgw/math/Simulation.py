@@ -13,6 +13,10 @@ class Calc():
             'Dx': 0.5, # 領域の分割幅
             'Dt': 0.5, # 時間の分割幅
         },
+        params: dict = {
+            'Gamma': 2, # 拡散項の係数
+            'const': 0.25, # 二重井戸型ポテンシャルの係数
+        },
         initialdata: dict = {
             'a0': 0.01, # 初期値の係数
             'wn': 4, # 波数
@@ -27,6 +31,7 @@ class Calc():
         output_dir: str='./data/output'
     ):
         self.settings = settings # space dimension
+        self.params = params
         self.initialdata = initialdata
         self.timeset = timeset
         self.output_dir = output_dir
@@ -44,7 +49,7 @@ class Calc():
         OUTPUT_U = self.output_var / 'U'
         OUTPUT_U.mkdir(parents=True, exist_ok=True)
 
-        # パラメタの保存
+        # 設定の保存
         with open(os.path.join(self.output_dir, 'settings.json'), 'w') as fp:
             json.dump(self.settings, fp)
         with open(os.path.join(self.output_dir, 'params.json'), 'w') as fp:
