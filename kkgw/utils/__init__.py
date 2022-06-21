@@ -8,3 +8,6 @@ def seed_setting(seed: int):
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
+
+def test():
+    print('test succeed')
