@@ -86,8 +86,10 @@ class Calc():
 
             if t%brank==0 or t==(inittime+1):
                 np.save(os.path.join(self.output_var, 'U', f't={t*Dt}.npy'), U[:,1])
-                OUTPUT_dUdt = self.output_var / 'dUdt'
-                OUTPUT_dUdt.mkdir(parents=True, exist_ok=True)
+                # OUTPUT_dUdt = self.output_var / 'dUdt'
+                # OUTPUT_dUdt.mkdir(parents=True, exist_ok=True)
+                OUTPUT_dUdt = os.path.join(self.output_var, 'dUdt')
+                os.makedirs(OUTPUT_dUdt, exist_ok=True)
                 np.save(os.path.join(OUTPUT_dUdt, f't={t*Dt}.npy'), (U[:,1]-U[:,0])/Dt)
                 if t%(brank*100)==0 or t==(inittime+1):
                     print(f't={t*Dt}')
