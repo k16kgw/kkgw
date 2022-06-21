@@ -20,16 +20,16 @@ class Calc():
         initialdata: dict = {
             'a0': 0.01, # 初期値の係数
             'wn': 4, # 波数
-            'func': 'a0 * np.cos(wn * np.pi*(idx)/(N+5))', # 関数形
+            'func': 'a0 * np.cos(wn * np.pi*(x)/(N+5))', # 関数形
         },
-        output_dir: str='./data/output'
+        output_dir: str = './data/output'
     ):
         self.settings = settings # space dimension
         # self.params = params
         self.initialdata = initialdata
         self.output_dir = output_dir
 
-        OUTPUT_VAR = self.output_dir / 'var'
+        OUTPUT_VAR = os.path.join(self.output_dir, 'var')
         OUTPUT_VAR.mkdir(parents=True, exist_ok=True)
         self.output_var = OUTPUT_VAR
 
