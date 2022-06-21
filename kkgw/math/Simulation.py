@@ -30,7 +30,7 @@ class Calc():
         self.output_dir = output_dir
 
         OUTPUT_VAR = os.path.join(self.output_dir, 'var')
-        OUTPUT_VAR.mkdir(parents=True, exist_ok=True)
+        os.makedirs(OUTPUT_VAR, exist_ok=True)
         self.output_var = OUTPUT_VAR
 
     def preparation(self):
@@ -39,8 +39,8 @@ class Calc():
         a0 = self.initialdata['a0']
         wn = self.initialdata['wn']
 
-        OUTPUT_U = self.output_var / 'U'
-        OUTPUT_U.mkdir(parents=True, exist_ok=True)
+        OUTPUT_U = os.path.join(self.output_dir, 'U')
+        os.makedirs(OUTPUT_U, exist_ok=True)
 
         # 設定の保存
         with open(os.path.join(self.output_dir, 'settings.json'), 'w') as fp:
