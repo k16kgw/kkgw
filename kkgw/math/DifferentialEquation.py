@@ -186,3 +186,59 @@ class CahnHilliard_WithNeumannBC_ByFwdEuler():
 
         output = (G.sum() - G[0]/2 - G[N-1]/2) * Dx
         return output
+
+class HeatEq_ReactionBC_rect():
+    """
+    内部：熱方程式
+    境界：反応方程式
+    領域：矩形
+    """
+
+    def __init__(
+        self, 
+        settings: dict = {
+            'N': 100, # 内部領域の分割数
+            'Dx': 0.01, # 領域の分割幅
+            'Dt': 0.01, # 時間の分割幅
+        },
+        params: dict = {
+            'Gamma': 1, # 拡散項の係数
+            'const': 1, # 反応項の係数
+        }
+    ):
+        self.settings = settings # space dimension
+        self.params = params # parameters
+
+    def Laplacian(self, N) -> np.ndarray:
+        """ 拡散項 """
+        output = np.zeros((N, N+2))
+        for k in range(0, N):
+            output[k, k:k+3] = [1, -2, 1]
+        return output
+
+    def Reaction(self, U1):
+        """ 反応項 """
+        N = self.settings['N']
+        Dx = self.settings['Dx']
+        const = self.params['const']
+
+        output = const * (U1[1:-1]**3 - U1[1:-1])
+        return output
+
+    def equation(self, U2, U1) -> list:
+        """ 方程式 """
+        N = self.settings['N']
+        Dx = self.settings['Dx']
+        Dt = self.settings['Dt']
+
+        Lap = self.Laplacian(N)
+
+        eq = [0]*(N+2)
+
+        eq[0] = U2[0] - U2[4]
+        eq[1] = U2[1] - U2[3]
+        eq[2:N+2] = U2[2:N+2] - U1[2:N+2] + Dt/Dx**2 * np.dot(Lap, self.chem_func(U1))
+        eq[N+2] = U2[N+2] - U2[N]
+        eq[N+3] = U2[N+3] - U2[N-1]
+
+        return eq
