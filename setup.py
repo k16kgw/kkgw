@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name = 'kkgw',
-    version = '1.1.3',
+    version = '2.0.0',
     url = 'https://github.com/keikagawa/kkgw.git',
     license = 'Free',
     author = 'keikagawa',

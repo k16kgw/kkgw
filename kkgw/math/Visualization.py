@@ -17,16 +17,16 @@ def close_fig(fig, close):
         plt.show()
 
 class Plot2d():
-    def __init__(self, output_dir):
+    def __init__(self, output_dir:str='./data/output'):
         self.output_dir = output_dir
-        OUTPUT_FIG = output_dir / 'fig'
-        OUTPUT_FIG.mkdir(parents=True, exist_ok=True)
+        OUTPUT_FIG = os.path.join(output_dir, 'fig')
+        os.makedirs(OUTPUT_FIG, exist_ok=True)
         self.output_fig = OUTPUT_FIG
 
-    def snapshot(self, fpl, name: str, time, close=True):
+    def snapshot(self, fpl, name:str, time, close=True):
         """ 各時刻での空間x関数のグラフ """
-        OUTPUT_FIG_plot = self.output_fig / name
-        OUTPUT_FIG_plot.mkdir(parents=True, exist_ok=True)
+        OUTPUT_FIG_plot = os.path.join(self.output_fig, name)
+        os.makedirs(OUTPUT_FIG_plot, exist_ok=True)
 
         fig = plt.figure(figsize=(6,5), facecolor='w')
         ax = fig.add_subplot(
@@ -63,9 +63,9 @@ class Anim2d():
     def __init__(self, timeset, output_dir: str):
         self.timeset = timeset
         self.output_dir = output_dir
-        self.output_var = output_dir / 'var'
-        OUTPUT_FIG = output_dir / 'fig'
-        OUTPUT_FIG.mkdir(parents=True, exist_ok=True)
+        self.output_var = os.path.join(output_dir, 'var')
+        OUTPUT_FIG = os.path.join(output_dir, 'fig')
+        os.makedirs(OUTPUT_FIG, exist_ok=True)
         self.output_fig = OUTPUT_FIG
 
     def animation(self, varname: str, ylim=[-1,1], ext='mp4'):
