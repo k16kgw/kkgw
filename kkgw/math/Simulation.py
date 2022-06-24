@@ -9,7 +9,7 @@ class Calc1d():
 
     def __init__(
         self,
-        cfg_inst, # class
+        cfg_inst, # cfgクラスのインスタンス
     ):
         """
         CFG クラスの構成
