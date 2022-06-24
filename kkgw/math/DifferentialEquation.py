@@ -1,5 +1,4 @@
 import numpy as np
-from slacker import Reactions
 
 class CahnHilliardEq_NeumannBC_1d_DVDM():
 
