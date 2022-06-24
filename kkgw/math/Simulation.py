@@ -9,7 +9,7 @@ class Calc1d():
 
     def __init__(
         self,
-        CFG, # class
+        cfg_inst, # class
     ):
         """
         CFG クラスの構成
@@ -23,19 +23,22 @@ class Calc1d():
                     'Dt': 0.5, # 時間の分割幅
                 },
                 timeset: dict = {
-                    'inittime': 0,
-                    'timespan': 1000,
+                    'inittime': 0, # 計算時の初期時刻
+                    'timespan': 1000, # 計算時の時間ステップ数
                     'brank': 10, # 解を保存するステップ間隔
+                    'plt_inittime': 0, # グラフプロットでの初期時刻
+                    'plt_timespan': 1000, # グラフプロットでの時間ステップ数
                 },
                 output_dir = './data/output',
             ):
                 self.settings = settings
+                self.timeset = timeset
                 self.output_dir = output_dir
             
-            def initialdata(self, x):
-                return x
+            def initialdata(self, U):
+                return 更新されたU
         """
-        self.cfg = CFG()
+        self.cfg = cfg_inst
         self.settings = self.cfg.settings
         self.timeset = self.cfg.timeset
         self.output_dir = self.cfg.output_dir
@@ -45,6 +48,15 @@ class Calc1d():
         os.makedirs(OUTPUT_VAR, exist_ok=True)
         self.output_var = OUTPUT_VAR
 
+        str_dt = str(self.settings['Dt'])
+        if '.' in str_dt:
+            self.dig = len(str_dt.split('.')[1]) # Dtの小数点以下の桁数
+        elif 'e' in str_dt:
+            self.dig = abs(int(str_dt.split('e')[1]))
+        else:
+            print('error')
+
+
     def preparation(self):
         """ 準備 """
         N = self.settings['N']
@@ -53,9 +65,9 @@ class Calc1d():
         os.makedirs(OUTPUT_U, exist_ok=True)
 
         # 設定の保存
-        with open(os.path.join(self.output_dir, 'CFG.pkl'), 'wb') as f:
+        with open(os.path.join(self.output_dir, 'cfg.pkl'), 'wb') as f:
             pickle.dump(self.cfg, f)
-        with open(os.path.join(self.output_dir, 'CFG.json'), 'w') as f:
+        with open(os.path.join(self.output_dir, 'cfg.json'), 'w') as f:
             json.dump(vars(self.cfg), f, indent=2)
 
         # 初期値の保存
@@ -83,11 +95,11 @@ class Calc1d():
             U[:,1] = result.x
 
             if t%brank==0 or t==(inittime+1):
-                np.save(os.path.join(self.output_var, 'U', f't={t*Dt}.npy'), U[:,1])
+                np.save(os.path.join(self.output_var, 'U', f't={round(t*Dt, self.dig)}.npy'), U[:,1])
                 OUTPUT_dUdt = os.path.join(self.output_var, 'dUdt')
                 os.makedirs(OUTPUT_dUdt, exist_ok=True)
-                np.save(os.path.join(OUTPUT_dUdt, f't={t*Dt}.npy'), (U[:,1]-U[:,0])/Dt)
+                np.save(os.path.join(OUTPUT_dUdt, f't={round(t*Dt, self.dig)}.npy'), (U[:,1]-U[:,0])/Dt)
                 if t%(brank*100)==0 or t==(inittime+1):
-                    print(f't={t*Dt}')
+                    print(f't={round(t*Dt, self.dig)}')
 
             U[:, 0] = U[:, 1]
